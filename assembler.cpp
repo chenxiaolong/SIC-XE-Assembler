@@ -30,6 +30,9 @@ bool Assembler::assembleFile(const std::string &path)
     std::vector<std::string> lines;
     std::string line;
     while (std::getline(file, line)) {
+        if (!line.empty() && *line.crbegin() == '\r') {
+            line.erase(line.end() - 1);
+        }
         lines.push_back(line);
     }
 
