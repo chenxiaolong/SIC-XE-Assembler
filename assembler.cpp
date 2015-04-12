@@ -351,11 +351,12 @@ bool Assembler::writeOutput(const std::string &listingFile,
         }
 
         // Print original code
-        std::fprintf(lst, "%-*s", static_cast<int>(maxLength),
-                     asmLine->line.c_str());
+        std::fprintf(lst, "%s", asmLine->line.c_str());
 
         std::string objCode = getObjCodeStr(asmLine);
         if (!objCode.empty()) {
+            std::fprintf(lst, "%s", std::string(
+                    maxLength - asmLine->line.size(), ' ').c_str());
             std::fprintf(lst, "    %s\n", objCode.c_str());
         } else {
             std::fprintf(lst, "\n");
