@@ -22,7 +22,7 @@ Assembler::~Assembler()
 
 bool Assembler::assembleFile(const std::string &path)
 {
-    std::ifstream file(path, std::ios::binary);
+    std::ifstream file(path);
     if (!file.is_open()) {
         return false;
     }
