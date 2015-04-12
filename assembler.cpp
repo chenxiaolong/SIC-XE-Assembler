@@ -199,6 +199,11 @@ bool Assembler::pass1(const std::vector<std::string> &lines)
         asmLine->locationNext = m_loc;
     }
 
+    if (m_lines.empty()) {
+        std::cerr << "Error: Empty assembly file" << std::endl;
+        return false;
+    }
+
     return true;
 }
 
