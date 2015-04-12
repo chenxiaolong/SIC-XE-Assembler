@@ -77,6 +77,11 @@ bool Assembler::pass1(const std::vector<std::string> &lines)
             continue;
         }
 
+        if (tokens[0][0] == '.') {
+            // Skip comment lines
+            continue;
+        }
+
         ASMLine *asmLine = new ASMLine();
         m_lines.push_back(asmLine);
         asmLine->line = line;
