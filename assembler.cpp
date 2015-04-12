@@ -320,7 +320,7 @@ bool Assembler::writeOutput(const std::string &listingFile,
         // Col 2-7:   Starting address for object code
         // Col 8-9:   Length of object code
         // Col 10-69: Object code in hex
-        std::fprintf(obj, "T%06X%02lX%-60s\n", startingAddr,
+        std::fprintf(obj, "T%06X%02lX%s\n", startingAddr,
                      curObjCode.size() / 2, curObjCode.c_str());
 
         curObjCode.clear();
