@@ -333,6 +333,12 @@ bool Assembler::writeOutput(const std::string &listingFile,
 
 
     // Write listing file
+    std::size_t maxLength = 0;
+    for (ASMLine *line : m_lines) {
+        if (line->line.size() > maxLength) {
+            maxLength = line->line.size();
+        }
+    }
 
     for (ASMLine *asmLine : m_lines) {
         // Print location
@@ -340,16 +346,17 @@ bool Assembler::writeOutput(const std::string &listingFile,
                 || m_instrs.isSicXE(asmLine->instr)
                 || m_instrs.isVariable(asmLine->instr)) {
             std::fprintf(lst, "%04X    ", asmLine->location);
-            } else {
-                std::fprintf(lst, "        ");
-            }
+        } else {
+            std::fprintf(lst, "        ");
+        }
 
-            // Print original code
-            std::fprintf(lst, "%-40s", asmLine->line.c_str());
+        // Print original code
+        std::fprintf(lst, "%-*s", static_cast<int>(maxLength),
+                     asmLine->line.c_str());
 
         std::string objCode = getObjCodeStr(asmLine);
         if (!objCode.empty()) {
-            std::fprintf(lst, "%s\n", objCode.c_str());
+            std::fprintf(lst, "    %s\n", objCode.c_str());
         } else {
             std::fprintf(lst, "\n");
         }
