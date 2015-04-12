@@ -69,17 +69,17 @@ bool Assembler::pass1(const std::vector<std::string> &lines)
     m_name.clear();
 
     for (auto const &line : lines) {
-        ASMLine *asmLine = new ASMLine();
-        m_lines.push_back(asmLine);
-        asmLine->line = line;
-
         std::vector<std::string> tokens;
-        splitString(&tokens, asmLine->line, ' ');
+        splitString(&tokens, line, ' ');
 
         if (tokens.empty()) {
             // Skip empty lines
-            return true;
+            continue;
         }
+
+        ASMLine *asmLine = new ASMLine();
+        m_lines.push_back(asmLine);
+        asmLine->line = line;
 
         std::string label;
         std::string instr;
