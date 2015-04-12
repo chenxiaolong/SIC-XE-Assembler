@@ -48,13 +48,9 @@ bool Assembler::assembleFile(const std::string &path)
 
     std::string lstPath;
     std::string objPath;
-    std::size_t dotPos = path.rfind('.');
-    std::size_t slashPos = path.rfind('/');
-    bool hasDot = dotPos != std::string::npos;
-    bool hasSlash = slashPos != std::string::npos;
-    if ((hasDot && hasSlash && slashPos < dotPos) || (hasDot && !hasSlash)) {
-        lstPath = path.substr(0, dotPos) + ".lst";
-        objPath = path.substr(0, dotPos) + ".obj";
+    if (path.size() >= 4 && path.compare(path.size() - 4, 4, ".asm") == 0) {
+        lstPath = path.substr(0, path.size() - 4) + ".lst";
+        objPath = path.substr(0, path.size() - 4) + ".obj";
     } else {
         lstPath = path + ".lst";
         objPath = path + ".obj";
