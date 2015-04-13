@@ -1,0 +1,16 @@
+<?php
+
+// sicasm path
+const SICASM_PATH = "/path/to/sicasm";
+
+// For Github authentication
+const GITHUB_CLIENT_ID = 'YOUR_GITHUB_CLIENT_ID';
+const GITHUB_CLIENT_SECRET = 'YOUR_GITHUB_CLIENT_SECRET';
+const GITHUB_REDIRECT_URI = 'YOUR_GITHUB_REDIRECT_URI';
+
+// For Google authentication
+const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID';
+const GOOGLE_CLIENT_SECRET = 'YOUR_GOOGLE_CLIENT_SECRET';
+const GOOGLE_REDIRECT_URI = 'YOUR_GOOGLE_REDIRECT_URI';
+
+?>

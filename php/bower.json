@@ -1,0 +1,21 @@
+{
+  "name": "SIC/XE Assembler",
+  "version": "0.0.0",
+  "authors": [
+    "Andrew Gunnerson <andrewgunnerson@gmail.com>"
+  ],
+  "license": "AGPL",
+  "homepage": "https://noobdev.io/assembler",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "autosize": "~2.0.0",
+    "bootstrap-social": "~4.8.0",
+    "bootstrap-material-design": "~0.3.0"
+  }
+}

@@ -1,0 +1,6 @@
+{
+    "require": {
+        "league/oauth2-client": "0.10.*",
+        "jakeasmith/http_build_url": "~0.1.5"
+    }
+}
