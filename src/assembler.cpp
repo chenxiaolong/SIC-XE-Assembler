@@ -533,7 +533,7 @@ std::string Assembler::getObjCodeStr(ASMLine *asmLine)
         case Instructions::Length::One:
             objCode.resize(2 + 1);
             std::sprintf(objCode.data(), "%02X", asmLine->objectCode);
-                break;
+            break;
         case Instructions::Length::Two:
             objCode.resize(4 + 1);
             std::sprintf(objCode.data(), "%04X", asmLine->objectCode);
