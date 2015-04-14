@@ -12,6 +12,28 @@
 #include <algorithm>
 
 
+static bool strtolWrap(const char *str, int base, int *out)
+{
+    char *ptr;
+    *out = strtoul(str, &ptr, base);
+    if (*ptr != '\0') {
+        return false;
+    }
+
+    return true;
+}
+
+static bool strtoulWrap(const char *str, int base, unsigned int *out)
+{
+    char *ptr;
+    *out = strtoul(str, &ptr, base);
+    if (*ptr != '\0') {
+        return false;
+    }
+
+    return true;
+}
+
 Assembler::Assembler()
 {
 }
@@ -199,7 +221,12 @@ bool Assembler::pass1(const std::vector<std::string> &lines)
             }
 
             // Set initial location to the parameter (in hex)
-            m_start = std::stoul(asmLine->params[0], nullptr, 16);
+            if (!strtoulWrap(asmLine->params[0].c_str(), 16, &m_start)) {
+                error(asmLine, "Invalid hex address: %s",
+                      asmLine->params[0].c_str());
+                return false;
+            }
+
             m_loc = m_start;
             m_name = asmLine->label;
         } else if (instr == Instructions::Directive_END) {
@@ -242,7 +269,14 @@ bool Assembler::pass1(const std::vector<std::string> &lines)
             asmLine->location = m_loc;
 
             // An array of words is: 3 bytes * length
-            m_loc += 3 * std::stoi(asmLine->params[0]);
+            unsigned int length;
+            if (!strtoulWrap(asmLine->params[0].c_str(), 10, &length)) {
+                error(asmLine, "Invalid length: %s",
+                      asmLine->params[0].c_str());
+                return false;
+            }
+
+            m_loc += 3 * length;
         } else if (instr == Instructions::Variable_RESB) {
             if (asmLine->params.size() != 1) {
                 error(asmLine, "RESB accepts 1 argument");
@@ -252,7 +286,14 @@ bool Assembler::pass1(const std::vector<std::string> &lines)
             asmLine->location = m_loc;
 
             // An array of bytes is: 1 byte * length
-            m_loc += std::stoi(asmLine->params[0]);
+            unsigned int length;
+            if (!strtoulWrap(asmLine->params[0].c_str(), 10, &length)) {
+                error(asmLine, "Invalid length: %s",
+                      asmLine->params[0].c_str());
+                return false;
+            }
+
+            m_loc += length;
         } else if (instr == Instructions::Variable_BYTE) {
             if (asmLine->params.size() != 1) {
                 error(asmLine, "BYTE accepts 1 argument");
@@ -369,8 +410,7 @@ bool Assembler::pass2()
             }
 
             // Set base value appropriately
-            m_base = findLabelAddr(asmLine->params[0]);
-            if (m_base < 0) {
+            if (!findLabelAddr(asmLine->params[0], &m_base)) {
                 error(asmLine, "Label not found: %s",
                       asmLine->params[0].c_str());
                 return false;
@@ -494,27 +534,19 @@ void Assembler::splitString(std::vector<std::string> *out, const std::string &in
     }
 }
 
-/* Check if a string contains numbers only (note: Requires C++11) */
-bool Assembler::isNumber(const std::string &str)
-{
-    return !str.empty() && std::find_if(str.begin(), str.end(),
-            [](char c) {
-                return !std::isdigit(c);
-            }) == str.end();
-}
-
 /* Search table for the address of a label */
-int Assembler::findLabelAddr(const std::string &label)
+bool Assembler::findLabelAddr(const std::string &label, unsigned int *out)
 {
     std::string labelOnly = Instructions::stripModifiers(label);
 
     for (ASMLine *line : m_lines) {
         if (line->label == labelOnly) {
-            return line->location;
+            *out = line->location;
+            return true;
         }
     }
 
-    return -1;
+    return false;
 }
 
 /* Convert the additional MOV instruction to the SIC/XE equivalent */
@@ -822,15 +854,13 @@ int Assembler::getObjCode3Or4Bytes(const Instructions::InstrInfo *info,
         assert(false);
     } else {
         std::string targetStr = Instructions::stripModifiers(params[0]);
-        bool targetStrIsNumber = isNumber(targetStr);
 
-        if (targetStrIsNumber) {
+        if (strtolWrap(targetStr.c_str(), 10, &target)) {
             // If target is a number, use the constant directly
-            target = std::stoi(targetStr);
         } else {
             // Otherwise, it's a label
-            int labelAddr = findLabelAddr(targetStr);
-            if (labelAddr < 0) {
+            unsigned int labelAddr;
+            if (!findLabelAddr(targetStr, &labelAddr)) {
                 m_error = "Label not found: ";
                 m_error += targetStr;
                 return -1;

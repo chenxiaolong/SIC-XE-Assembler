@@ -36,9 +36,7 @@ private:
 
     void splitString(std::vector<std::string> *out, const std::string &in, char delim);
 
-    bool isNumber(const std::string &str);
-
-    int findLabelAddr(const std::string &label);
+    bool findLabelAddr(const std::string &label, unsigned int *out);
 
     bool convertMovToSicXE(const std::vector<std::string> &params,
                            bool extended,
@@ -70,9 +68,9 @@ private:
     std::string m_path;
     std::vector<ASMLine *> m_lines;
     Instructions m_instrs;
-    int m_loc;
-    int m_base;
-    int m_start;
+    unsigned int m_loc;
+    unsigned int m_base;
+    unsigned int m_start;
     std::string m_name;
     std::string m_error;
 };
