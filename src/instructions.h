@@ -134,6 +134,7 @@ public:
     static bool isParamIndex(const std::vector<std::string> &params);
     static std::string stripModifiers(const std::string &text);
     static int getRegister(const std::string &reg);
+    static std::string getRegisterName(const std::string &reg);
 
 private:
     std::vector<InstrInfo> m_instrs;

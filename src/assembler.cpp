@@ -533,7 +533,7 @@ bool Assembler::convertMovToSicXE(const std::vector<std::string> &params,
         paramsOut->push_back(params[1]);
         paramsOut->push_back(params[0]);
     } else if (param1IsReg) {
-        std::string regName = params[0].substr(2);
+        std::string regName = Instructions::getRegisterName(params[0]);
         std::string instr = "LD" + regName;
 
         if (!m_instrs.isSicXE(instr)) {
@@ -545,7 +545,7 @@ bool Assembler::convertMovToSicXE(const std::vector<std::string> &params,
         *instrOut = instr;
         paramsOut->push_back(params[1]);
     } else {
-        std::string regName = params[1].substr(2);
+        std::string regName = Instructions::getRegisterName(params[1]);
         std::string instr = "ST" + regName;
 
         if (!m_instrs.isSicXE(instr)) {

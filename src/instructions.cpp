@@ -228,3 +228,31 @@ int Instructions::getRegister(const std::string &reg)
         return -1;
     }
 }
+
+std::string Instructions::getRegisterName(const std::string &reg)
+{
+    int regNum = getRegister(reg);
+
+    switch (regNum) {
+    case Register_A:
+        return "A";
+    case Register_X:
+        return "X";
+    case Register_L:
+        return "L";
+    case Register_B:
+        return "B";
+    case Register_S:
+        return "S";
+    case Register_T:
+        return "T";
+    case Register_F:
+        return "F";
+    case Register_PC:
+        return "PC";
+    case Register_SW:
+        return "SW";
+    default:
+        return std::string();
+    }
+}
