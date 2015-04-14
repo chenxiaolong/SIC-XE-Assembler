@@ -271,6 +271,11 @@ bool Assembler::pass2()
                 assert(false);
             }
 
+            // Instruction with index will have an extra "X" parameter
+            if (Instructions::isParamIndex(asmLine->params)) {
+                ++length;
+            }
+
             if (asmLine->params.size() != length) {
                 std::cerr << "Error: "
                         << Instructions::stripModifiers(asmLine->instr)
