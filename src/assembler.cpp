@@ -303,12 +303,16 @@ bool Assembler::pass2()
                 assert(false);
             }
 
-            // Instruction with index will have an extra "X" parameter
-            if (Instructions::isParamIndex(asmLine->params)) {
-                ++length;
+            std::size_t paramSize = asmLine->params.size();
+
+            // Instruction with non-register parameters and index mode will
+            // have an extra "X" parameter
+            if (instr->type == Instructions::Type::OneOp
+                    && Instructions::isParamIndex(asmLine->params)) {
+                --paramSize;
             }
 
-            if (asmLine->params.size() != length) {
+            if (paramSize != length) {
                 error(asmLine, "%s accepts %zu arguments",
                       Instructions::stripModifiers(asmLine->instr).c_str(),
                       length);
