@@ -12,6 +12,18 @@ const std::string Instructions::Variable_RESW = "RESW";
 const std::string Instructions::Variable_RESB = "RESB";
 const std::string Instructions::Variable_BYTE = "BYTE";
 const std::string Instructions::Additional_MOV = "MOV";
+const std::string Instructions::Additional_LD = "LD";
+const std::string Instructions::Additional_ST = "ST";
+
+const int Instructions::Register_A = 0;
+const int Instructions::Register_X = 1;
+const int Instructions::Register_L = 2;
+const int Instructions::Register_B = 3;
+const int Instructions::Register_S = 4;
+const int Instructions::Register_T = 5;
+const int Instructions::Register_F = 6;
+const int Instructions::Register_PC = 8;
+const int Instructions::Register_SW = 9;
 
 Instructions::Instructions()
 {
@@ -137,7 +149,9 @@ bool Instructions::isVariable(const std::string &instr)
 
 bool Instructions::isAdditional(const std::string &instr)
 {
-    return stripModifiers(instr) == Additional_MOV;
+    return stripModifiers(instr) == Additional_MOV
+            || stripModifiers(instr) == Additional_LD
+            || stripModifiers(instr) == Additional_ST;
 }
 
 bool Instructions::isExtended(const std::string &instr)
@@ -173,7 +187,7 @@ bool Instructions::isParamImmediate(const std::string &label)
 bool Instructions::isParamIndex(const std::vector<std::string> &params)
 {
     // Index: parameters end with ',X'
-    return params.size() >= 2 && params[1] == "X";
+    return params.size() >= 2 && getRegister(params[1]) == Register_X;
 }
 
 std::string Instructions::stripModifiers(const std::string &text)
@@ -192,24 +206,24 @@ int Instructions::getRegister(const std::string &reg)
         return -1;
     }
 
-    if (reg == "%RA" || reg == "A") {
-        return 0;
-    } else if (reg == "%RX" || reg == "X") {
-        return 1;
-    } else if (reg == "%RL" || reg == "L") {
-        return 2;
-    } else if (reg == "%RB" || reg == "B") {
-        return 3;
-    } else if (reg == "%RS" || reg == "S") {
-        return 4;
-    } else if (reg == "%RT" || reg == "T") {
-        return 5;
-    } else if (reg == "%RF" || reg == "F") {
-        return 6;
-    } else if (reg == "%RPC" || reg == "PC") {
-        return 8;
-    } else if (reg == "%RSW" || reg == "SW") {
-        return 9;
+    if (reg == "%RA" || reg == "AX" || reg == "A") {
+        return Register_A;
+    } else if (reg == "%RX" || reg == "XX" || reg == "X") {
+        return Register_X;
+    } else if (reg == "%RL" || reg == "LX" || reg == "L") {
+        return Register_L;
+    } else if (reg == "%RB" || reg == "BX" || reg == "B") {
+        return Register_B;
+    } else if (reg == "%RS" || reg == "SX" || reg == "S") {
+        return Register_S;
+    } else if (reg == "%RT" || reg == "TX" || reg == "T") {
+        return Register_T;
+    } else if (reg == "%RF" || reg == "FX" || reg == "F") {
+        return Register_F;
+    } else if (reg == "%RPC" || reg == "PCX" || reg == "PC") {
+        return Register_PC;
+    } else if (reg == "%RSW" || reg == "SWX" || reg == "SW") {
+        return Register_SW;
     } else {
         return -1;
     }

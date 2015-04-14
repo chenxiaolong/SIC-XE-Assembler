@@ -132,6 +132,21 @@ bool Assembler::pass1(const std::vector<std::string> &lines)
 
             instr = newInstr;
             asmLine->params.swap(newParams);
+        } else if (Instructions::stripModifiers(instr) == Instructions::Additional_LD
+                || Instructions::stripModifiers(instr) == Instructions::Additional_ST) {
+            std::string newInstr;
+            std::vector<std::string> newParams;
+
+            bool ret = convertLdStToSicXE(Instructions::stripModifiers(instr),
+                                          asmLine->params,
+                                          Instructions::isExtended(instr),
+                                          &newInstr, &newParams);
+            if (!ret) {
+                return false;
+            }
+
+            instr = newInstr;
+            asmLine->params.swap(newParams);
         }
 
         asmLine->label = label;
@@ -448,6 +463,66 @@ bool Assembler::convertMovToSicXE(const std::vector<std::string> &params,
         *instrOut = instr;
         paramsOut->push_back(params[0]);
     }
+
+    if (extended) {
+        // If MOV was extended, then the new instruction should be extended
+        instrOut->insert(instrOut->begin(), '+');
+    }
+
+    return true;
+}
+
+bool Assembler::convertLdStToSicXE(const std::string &instr,
+                                   const std::vector<std::string> &params,
+                                   bool extended,
+                                   std::string *instrOut,
+                                   std::vector<std::string> *paramsOut)
+{
+    bool param1IsReg = Instructions::getRegister(params[0]) >= 0;
+    bool param2IsReg = Instructions::getRegister(params[1]) >= 0;
+
+    paramsOut->clear();
+
+    if (param1IsReg && param2IsReg) {
+        // Use RMO to move R1 to R2
+        *instrOut = m_instrs[Instructions::SicXE::RMO]->name;
+        paramsOut->push_back(params[1]);
+        paramsOut->push_back(params[0]);
+    }
+
+    if (!param2IsReg && instr == Instructions::Additional_ST) {
+        std::cerr << "Error: Failed to convert ST statement to SIC/XE. "
+                << "Second parameter " << params[1] << " is not a register" << std::endl;
+        return false;
+    }
+    if (!param1IsReg && instr == Instructions::Additional_LD) {
+        std::cerr << "Error: Failed to convert LD statement to SIC/XE. "
+                << "First parameter " << params[0] << " is not a register" << std::endl;
+        return false;
+    }
+
+    std::string reg;
+    std::string value;
+
+    if (instr == Instructions::Additional_ST) {
+        reg = params[1];
+        value = params[0];
+    } else if (instr == Instructions::Additional_LD) {
+        reg = params[0];
+        value = params[1];
+    }
+
+    std::string regName = reg.substr(0, reg.size() - 1);
+    std::string newInstr = instr + regName;
+
+    if (!m_instrs.isSicXE(newInstr)) {
+        std::cerr << "Error: Failed to convert " << instr << " statement to SIC/XE. "
+                << newInstr << " is invalid" << std::endl;
+        return false;
+    }
+
+    *instrOut = newInstr;
+    paramsOut->push_back(value);
 
     if (extended) {
         // If MOV was extended, then the new instruction should be extended

@@ -79,6 +79,18 @@ public:
     static const std::string Variable_RESB;
     static const std::string Variable_BYTE;
     static const std::string Additional_MOV;
+    static const std::string Additional_LD;
+    static const std::string Additional_ST;
+
+    static const int Register_A;
+    static const int Register_X;
+    static const int Register_L;
+    static const int Register_B;
+    static const int Register_S;
+    static const int Register_T;
+    static const int Register_F;
+    static const int Register_PC;
+    static const int Register_SW;
 
     enum class Length
     {
