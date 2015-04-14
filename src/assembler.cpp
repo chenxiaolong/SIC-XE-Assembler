@@ -587,48 +587,48 @@ bool Assembler::convertLdStToSicXE(const std::string &instr,
         *instrOut = m_instrs[Instructions::SicXE::RMO]->name;
         paramsOut->push_back(params[1]);
         paramsOut->push_back(params[0]);
+    } else {
+        if (!param2IsReg && instr == Instructions::Additional_ST) {
+            m_error = "Failed to convert ST statement: ";
+            m_error += "Second parameter ";
+            m_error += params[1];
+            m_error += " is not a register";
+            return false;
+        }
+        if (!param1IsReg && instr == Instructions::Additional_LD) {
+            m_error = "Failed to convert LD statement: ";
+            m_error += "First parameter ";
+            m_error += params[0];
+            m_error += " is not a register";
+            return false;
+        }
+
+        std::string reg;
+        std::string value;
+
+        if (instr == Instructions::Additional_ST) {
+            reg = params[1];
+            value = params[0];
+        } else if (instr == Instructions::Additional_LD) {
+            reg = params[0];
+            value = params[1];
+        }
+
+        std::string regName = Instructions::getRegisterName(reg);
+        std::string newInstr = instr + regName;
+
+        if (!m_instrs.isSicXE(newInstr)) {
+            m_error = "Failed to convert ";
+            m_error += instr;
+            m_error += " statement: ";
+            m_error += newInstr;
+            m_error += " is invalid";
+            return false;
+        }
+
+        *instrOut = newInstr;
+        paramsOut->push_back(value);
     }
-
-    if (!param2IsReg && instr == Instructions::Additional_ST) {
-        m_error = "Failed to convert ST statement: ";
-        m_error += "Second parameter ";
-        m_error += params[1];
-        m_error += " is not a register";
-        return false;
-    }
-    if (!param1IsReg && instr == Instructions::Additional_LD) {
-        m_error = "Failed to convert LD statement: ";
-        m_error += "First parameter ";
-        m_error += params[0];
-        m_error += " is not a register";
-        return false;
-    }
-
-    std::string reg;
-    std::string value;
-
-    if (instr == Instructions::Additional_ST) {
-        reg = params[1];
-        value = params[0];
-    } else if (instr == Instructions::Additional_LD) {
-        reg = params[0];
-        value = params[1];
-    }
-
-    std::string regName = reg.substr(0, reg.size() - 1);
-    std::string newInstr = instr + regName;
-
-    if (!m_instrs.isSicXE(newInstr)) {
-        m_error = "Failed to convert ";
-        m_error += instr;
-        m_error += " statement: ";
-        m_error += newInstr;
-        m_error += " is invalid";
-        return false;
-    }
-
-    *instrOut = newInstr;
-    paramsOut->push_back(value);
 
     if (extended) {
         // If MOV was extended, then the new instruction should be extended
