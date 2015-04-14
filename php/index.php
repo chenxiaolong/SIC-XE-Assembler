@@ -107,6 +107,14 @@ if (!auth_is_authenticated()) {
             pre {
                 background-color: inherit;
                 border-style: none;
+                overflow-x: auto;
+            }
+
+            pre code {
+                overflow-wrap: normal;
+                word-wrap: normal;
+                white-space: pre;
+                font-family: monospace;
             }
 
             .avatar-image-nav {
@@ -142,6 +150,22 @@ if (!auth_is_authenticated()) {
                 display: block;
                 text-align: center;
                 color: #808080;
+            }
+        </style>
+
+        <!-- Line numbering -->
+        <style>
+            pre .line-number {
+                font-family: monospace;
+                float: left;
+                margin-right: 1em;
+                border-right: 1px solid;
+                text-align: right;
+            }
+
+            pre .line-number span {
+                display: block;
+                padding-right: 1em;
             }
         </style>
 
@@ -313,6 +337,18 @@ if (!auth_is_authenticated()) {
 
         <script>
             $.material.init();
+        </script>
+
+        <!-- Line numbering -->
+        <script>
+            $('pre').each(function () {
+                var $preElem = $(this);
+                $preElem.prepend('<span class="line-number"></span>');
+                var numLines = $preElem.html().split(/\n/).length;
+                for (var j = 0; j < numLines; j++) {
+                    $preElem.find('span').first().append('<span>' + (j + 1) + '</span>');
+                }
+            });
         </script>
 
         <script>
