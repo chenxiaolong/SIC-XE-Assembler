@@ -9,7 +9,7 @@ const DISPLAY_TYPE_RESULT           = 3;
 const DISPLAY_TYPE_ERROR            = 4;
 
 function process_post_request() {
-    global $lst_contents, $obj_contents, $error_msg;
+    global $asm_contents, $lst_contents, $obj_contents, $error_msg;
 
     # Check that the required variables are set
     if (!isset($_POST['assembly'])) {
@@ -17,11 +17,13 @@ function process_post_request() {
         exit();
     }
 
+    $asm_contents = $_POST['assembly'];
+
     # Write the input to a temporary file
     $temp = tmpfile();
     $meta_data = stream_get_meta_data($temp);
     $asm_file = $meta_data['uri'];
-    fwrite($temp, $_POST['assembly']);
+    fwrite($temp, $asm_contents);
 
     # Generated files
     $lst_file = $asm_file.'.lst';
@@ -275,6 +277,15 @@ if (!auth_is_authenticated()) {
                 <div class="panel-body">
                     <p>The provided input code failed to assemble. The assembler reported ther error below.</p>
                     <pre><code><?php echo $error_msg; ?></code></pre>
+                </div>
+            </div>
+
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h2 class="panel-title" style="font-size:20px;">Original code</h2>
+                </div>
+                <div class="panel-body">
+                    <pre><code><?php echo $asm_contents; ?></code></pre>
                 </div>
             </div>
 
