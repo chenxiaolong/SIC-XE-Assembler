@@ -933,6 +933,9 @@ int Assembler::getRelativeAddr(int prog, int base, int target,
         if (base < 0) {
             // Base register turned off
             m_error = "Base register not used and program counter out of range";
+            m_error += " (prog. disp.: ";
+            m_error += std::to_string(progDiff);
+            m_error += ")";
             return -1;
         }
 
@@ -943,6 +946,11 @@ int Assembler::getRelativeAddr(int prog, int base, int target,
         } else {
             // Base out of range
             m_error = "Base and program counter displacement out of range";
+            m_error += " (prog. disp.: ";
+            m_error += std::to_string(progDiff);
+            m_error += ", base disp.: ";
+            m_error += std::to_string(baseDiff);
+            m_error += ")";
             return -1;
         }
     }
