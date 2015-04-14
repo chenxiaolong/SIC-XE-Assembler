@@ -135,6 +135,12 @@ bool Assembler::pass1(const std::vector<std::string> &lines)
             return false;
         }
 
+        if (Instructions::getRegister(label) >= 0) {
+            error(asmLine, "Label cannot be the name of a register: %s",
+                  label.c_str());
+            return false;
+        }
+
         // Treat remaining tokens in the line as parameters and split them at each
         // comma if necessary
         for (unsigned int i = paramIndex; i < tokens.size(); ++i) {
