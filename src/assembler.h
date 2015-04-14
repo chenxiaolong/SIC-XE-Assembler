@@ -15,6 +15,7 @@ public:
 
 private:
     struct ASMLine {
+        unsigned int lineNumber;
         std::string line;
         unsigned int location;
         unsigned int locationNext;
@@ -23,6 +24,8 @@ private:
         std::vector<std::string> params;
         int objectCode;
     };
+
+    void error(ASMLine *asmLine, const char *fmt, ...);
 
     bool pass1(const std::vector<std::string> &lines);
 
@@ -64,12 +67,14 @@ private:
     int getRelativeAddr(int prog, int base, int target,
                         bool *useProg, bool *useBase, int *addr);
 
+    std::string m_path;
     std::vector<ASMLine *> m_lines;
     Instructions m_instrs;
     int m_loc;
     int m_base;
     int m_start;
     std::string m_name;
+    std::string m_error;
 };
 
 #endif // ASSEMBLER_H

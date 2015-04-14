@@ -1,6 +1,9 @@
 #include "assembler.h"
 
 #include <cassert>
+#include <cstdio>
+
+#include <stdarg.h>
 
 #include <fstream>
 #include <iostream>
@@ -20,12 +23,35 @@ Assembler::~Assembler()
     }
 }
 
+__attribute__((format(printf, 3, 4)))
+void Assembler::error(ASMLine *asmLine, const char *fmt, ...)
+{
+    // Filename and line number
+    if (asmLine) {
+        std::fprintf(stderr, "%s:%u: ", m_path.c_str(), asmLine->lineNumber);
+    }
+
+    std::fprintf(stderr, "error: ");
+
+    va_list ap;
+    va_start(ap, fmt);
+    std::vfprintf(stderr, fmt, ap);
+    va_end(ap);
+    std::fprintf(stderr, "\n");
+
+    if (asmLine) {
+        std::fprintf(stderr, "    %s\n", asmLine->line.c_str());
+    }
+}
+
 bool Assembler::assembleFile(const std::string &path)
 {
     std::ifstream file(path);
     if (!file.is_open()) {
         return false;
     }
+
+    m_path = path;
 
     std::vector<std::string> lines;
     std::string line;
@@ -68,7 +94,11 @@ bool Assembler::pass1(const std::vector<std::string> &lines)
     m_loc = 0;
     m_name.clear();
 
+    int lineNumber = 0;
+
     for (auto const &line : lines) {
+        ++lineNumber;
+
         std::vector<std::string> tokens;
         splitString(&tokens, line, ' ');
 
@@ -85,6 +115,7 @@ bool Assembler::pass1(const std::vector<std::string> &lines)
         ASMLine *asmLine = new ASMLine();
         m_lines.push_back(asmLine);
         asmLine->line = line;
+        asmLine->lineNumber = lineNumber;
 
         std::string label;
         std::string instr;
@@ -100,8 +131,7 @@ bool Assembler::pass1(const std::vector<std::string> &lines)
             instr = tokens[1];
             paramIndex = 2;
         } else {
-            std::cerr << "Error: Invalid instruction in line: "
-                    << asmLine->line << std::endl;
+            error(asmLine, "Invalid instruction %s", tokens[0].c_str());
             return false;
         }
 
@@ -127,6 +157,7 @@ bool Assembler::pass1(const std::vector<std::string> &lines)
                                         Instructions::isExtended(instr),
                                         &newInstr, &newParams);
             if (!ret) {
+                error(asmLine, "%s", m_error.c_str());
                 return false;
             }
 
@@ -142,6 +173,7 @@ bool Assembler::pass1(const std::vector<std::string> &lines)
                                           Instructions::isExtended(instr),
                                           &newInstr, &newParams);
             if (!ret) {
+                error(asmLine, "%s", m_error.c_str());
                 return false;
             }
 
@@ -156,7 +188,7 @@ bool Assembler::pass1(const std::vector<std::string> &lines)
 
         if (instr == Instructions::Directive_START) {
             if (asmLine->params.size() != 1) {
-                std::cerr << "Error: START accepts 1 argument" << std::endl;
+                error(asmLine, "START accepts 1 argument");
                 return false;
             }
 
@@ -197,7 +229,7 @@ bool Assembler::pass1(const std::vector<std::string> &lines)
             m_loc += 3;
         } else if (instr == Instructions::Variable_RESW) {
             if (asmLine->params.size() != 1) {
-                std::cerr << "Error: RESW accepts 1 argument" << std::endl;
+                error(asmLine, "RESW accepts 1 argument");
                 return false;
             }
 
@@ -207,7 +239,7 @@ bool Assembler::pass1(const std::vector<std::string> &lines)
             m_loc += 3 * std::stoi(asmLine->params[0]);
         } else if (instr == Instructions::Variable_RESB) {
             if (asmLine->params.size() != 1) {
-                std::cerr << "Error: RESB accepts 1 argument" << std::endl;
+                error(asmLine, "RESB accepts 1 argument");
                 return false;
             }
 
@@ -217,7 +249,7 @@ bool Assembler::pass1(const std::vector<std::string> &lines)
             m_loc += std::stoi(asmLine->params[0]);
         } else if (instr == Instructions::Variable_BYTE) {
             if (asmLine->params.size() != 1) {
-                std::cerr << "Error: BYTE accepts 1 argument" << std::endl;
+                error(asmLine, "BYTE accepts 1 argument");
                 return false;
             }
 
@@ -225,8 +257,8 @@ bool Assembler::pass1(const std::vector<std::string> &lines)
 
             std::string quoted = getQuoted(asmLine->params[0]);
             if (quoted.empty()) {
-                std::cerr << "Error: No bytes found in BYTE variable: "
-                        << asmLine->params[0] << std::endl;
+                error(asmLine, "No bytes found in BYTE variable: %s",
+                      asmLine->params[0].c_str());
                 return false;
             }
 
@@ -240,7 +272,7 @@ bool Assembler::pass1(const std::vector<std::string> &lines)
     }
 
     if (m_lines.empty()) {
-        std::cerr << "Error: Empty assembly file" << std::endl;
+        error(nullptr, "Empty assembly file");
         return false;
     }
 
@@ -277,9 +309,9 @@ bool Assembler::pass2()
             }
 
             if (asmLine->params.size() != length) {
-                std::cerr << "Error: "
-                        << Instructions::stripModifiers(asmLine->instr)
-                        << " accepts " << length << " arguments" << std::endl;
+                error(asmLine, "%s accepts %zu arguments",
+                      Instructions::stripModifiers(asmLine->instr).c_str(),
+                      length);
                 return false;
             }
 
@@ -316,21 +348,21 @@ bool Assembler::pass2()
             }
 
             if (asmLine->objectCode < 0) {
-                std::cerr << "Error: Failed to generate object code for line: "
-                        << asmLine->line << std::endl;
+                error(asmLine, "Failed to generate object code: %s",
+                      m_error.c_str());
                 return false;
             }
         } else if (asmLine->instr == Instructions::Directive_BASE) {
             if (asmLine->params.size() != 1) {
-                std::cerr << "Error: BASE accepts 1 parameter" << std::endl;
+                error(asmLine, "BASE accepts 1 parameter");
                 return false;
             }
 
             // Set base value appropriately
             m_base = findLabelAddr(asmLine->params[0]);
             if (m_base < 0) {
-                std::cerr << "Error: Label not found: "
-                        << asmLine->params[0] << std::endl;
+                error(asmLine, "Label not found: %s",
+                      asmLine->params[0].c_str());
                 return false;
             }
         } else if (asmLine->instr == Instructions::Directive_NOBASE) {
@@ -482,7 +514,7 @@ bool Assembler::convertMovToSicXE(const std::vector<std::string> &params,
                                   std::vector<std::string> *paramsOut)
 {
     if (params.size() != 2) {
-        std::cerr << "Error: MOV accepts 2 parameters" << std::endl;
+        m_error = "MOV accepts 2 parameters";
         return false;
     }
 
@@ -501,8 +533,8 @@ bool Assembler::convertMovToSicXE(const std::vector<std::string> &params,
         std::string instr = "LD" + regName;
 
         if (!m_instrs.isSicXE(instr)) {
-            std::cerr << "Error: Failed to convert MOV statement to SIC/XE. "
-                    << instr << " is invalid" << std::endl;
+            m_error = "Failed to convert MOV statement: "
+                    + instr + " is invalid";
             return false;
         }
 
@@ -513,8 +545,8 @@ bool Assembler::convertMovToSicXE(const std::vector<std::string> &params,
         std::string instr = "ST" + regName;
 
         if (!m_instrs.isSicXE(instr)) {
-            std::cerr << "Error: Failed to convert MOV statement to SIC/XE. "
-                    << instr << " is invalid" << std::endl;
+            m_error = "Failed to convert MOV statement: "
+                    + instr + " is invalid";
             return false;
         }
 
@@ -537,7 +569,7 @@ bool Assembler::convertLdStToSicXE(const std::string &instr,
                                    std::vector<std::string> *paramsOut)
 {
     if (params.size() != 2) {
-        std::cerr << "Error: " << instr << " accepts 2 parameters" << std::endl;
+        m_error = instr + " accepts 2 parameters";
         return false;
     }
 
@@ -554,13 +586,17 @@ bool Assembler::convertLdStToSicXE(const std::string &instr,
     }
 
     if (!param2IsReg && instr == Instructions::Additional_ST) {
-        std::cerr << "Error: Failed to convert ST statement to SIC/XE. "
-                << "Second parameter " << params[1] << " is not a register" << std::endl;
+        m_error = "Failed to convert ST statement: ";
+        m_error += "Second parameter ";
+        m_error += params[1];
+        m_error += " is not a register";
         return false;
     }
     if (!param1IsReg && instr == Instructions::Additional_LD) {
-        std::cerr << "Error: Failed to convert LD statement to SIC/XE. "
-                << "First parameter " << params[0] << " is not a register" << std::endl;
+        m_error = "Failed to convert LD statement: ";
+        m_error += "First parameter ";
+        m_error += params[0];
+        m_error += " is not a register";
         return false;
     }
 
@@ -579,8 +615,11 @@ bool Assembler::convertLdStToSicXE(const std::string &instr,
     std::string newInstr = instr + regName;
 
     if (!m_instrs.isSicXE(newInstr)) {
-        std::cerr << "Error: Failed to convert " << instr << " statement to SIC/XE. "
-                << newInstr << " is invalid" << std::endl;
+        m_error = "Failed to convert ";
+        m_error += instr;
+        m_error += " statement: ";
+        m_error += newInstr;
+        m_error += " is invalid";
         return false;
     }
 
@@ -782,7 +821,8 @@ int Assembler::getObjCode3Or4Bytes(const Instructions::InstrInfo *info,
             // Otherwise, it's a label
             int labelAddr = findLabelAddr(targetStr);
             if (labelAddr < 0) {
-                std::cerr << "Error: Label not found: " << targetStr << std::endl;
+                m_error = "Label not found: ";
+                m_error += targetStr;
                 return -1;
             }
 
@@ -852,7 +892,7 @@ int Assembler::getRelativeAddr(int prog, int base, int target,
         // Try base counter relative
         if (base < 0) {
             // Base register turned off
-            std::cerr << "Error: Base register not used and program counter out of range" << std::endl;
+            m_error = "Base register not used and program counter out of range";
             return -1;
         }
 
@@ -862,7 +902,7 @@ int Assembler::getRelativeAddr(int prog, int base, int target,
             targetAddr = baseDiff;
         } else {
             // Base out of range
-            std::cerr << "Error: Base and program counter displacement out of range" << std::endl;
+            m_error = "Base and program counter displacement out of range";
             return -1;
         }
     }
