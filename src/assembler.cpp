@@ -155,6 +155,11 @@ bool Assembler::pass1(const std::vector<std::string> &lines)
         // Calculate locations
 
         if (instr == Instructions::Directive_START) {
+            if (asmLine->params.size() != 1) {
+                std::cerr << "Error: START accepts 1 argument" << std::endl;
+                return false;
+            }
+
             // Set initial location to the parameter (in hex)
             m_start = std::stoul(asmLine->params[0], nullptr, 16);
             m_loc = m_start;
@@ -191,16 +196,31 @@ bool Assembler::pass1(const std::vector<std::string> &lines)
             // A word is 3 bytes
             m_loc += 3;
         } else if (instr == Instructions::Variable_RESW) {
+            if (asmLine->params.size() != 1) {
+                std::cerr << "Error: RESW accepts 1 argument" << std::endl;
+                return false;
+            }
+
             asmLine->location = m_loc;
 
             // An array of words is: 3 bytes * length
             m_loc += 3 * std::stoi(asmLine->params[0]);
         } else if (instr == Instructions::Variable_RESB) {
+            if (asmLine->params.size() != 1) {
+                std::cerr << "Error: RESB accepts 1 argument" << std::endl;
+                return false;
+            }
+
             asmLine->location = m_loc;
 
             // An array of bytes is: 1 byte * length
             m_loc += std::stoi(asmLine->params[0]);
         } else if (instr == Instructions::Variable_BYTE) {
+            if (asmLine->params.size() != 1) {
+                std::cerr << "Error: BYTE accepts 1 argument" << std::endl;
+                return false;
+            }
+
             asmLine->location = m_loc;
 
             std::string quoted = getQuoted(asmLine->params[0]);
@@ -234,6 +254,29 @@ bool Assembler::pass2()
 
         if (m_instrs.isSicXE(asmLine->instr)) {
             auto *instr = m_instrs[asmLine->instr];
+
+            std::size_t length;
+            switch (instr->type) {
+            case Instructions::Type::ZeroOp:
+                length = 0;
+                break;
+            case Instructions::Type::OneOp:
+                length = 1;
+                break;
+            case Instructions::Type::TwoOp:
+                length = 2;
+                break;
+            default:
+                // Programmer's error
+                assert(false);
+            }
+
+            if (asmLine->params.size() != length) {
+                std::cerr << "Error: "
+                        << Instructions::stripModifiers(asmLine->instr)
+                        << " accepts " << length << " arguments" << std::endl;
+                return false;
+            }
 
             if (instr->length == Instructions::Length::One) {
                 // One byte instructions
@@ -273,6 +316,11 @@ bool Assembler::pass2()
                 return false;
             }
         } else if (asmLine->instr == Instructions::Directive_BASE) {
+            if (asmLine->params.size() != 1) {
+                std::cerr << "Error: BASE accepts 1 parameter" << std::endl;
+                return false;
+            }
+
             // Set base value appropriately
             m_base = findLabelAddr(asmLine->params[0]);
             if (m_base < 0) {
@@ -428,6 +476,11 @@ bool Assembler::convertMovToSicXE(const std::vector<std::string> &params,
                                   std::string *instrOut,
                                   std::vector<std::string> *paramsOut)
 {
+    if (params.size() != 2) {
+        std::cerr << "Error: MOV accepts 2 parameters" << std::endl;
+        return false;
+    }
+
     bool param1IsReg = Instructions::getRegister(params[0]) >= 0;
     bool param2IsReg = Instructions::getRegister(params[1]) >= 0;
 
@@ -478,6 +531,11 @@ bool Assembler::convertLdStToSicXE(const std::string &instr,
                                    std::string *instrOut,
                                    std::vector<std::string> *paramsOut)
 {
+    if (params.size() != 2) {
+        std::cerr << "Error: " << instr << " accepts 2 parameters" << std::endl;
+        return false;
+    }
+
     bool param1IsReg = Instructions::getRegister(params[0]) >= 0;
     bool param2IsReg = Instructions::getRegister(params[1]) >= 0;
 
