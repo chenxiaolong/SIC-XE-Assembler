@@ -166,6 +166,10 @@ bool Assembler::pass1(const std::vector<std::string> &lines)
         // Treat remaining tokens in the line as parameters and split them at each
         // comma if necessary
         for (unsigned int i = paramIndex; i < tokens.size(); ++i) {
+            if (!tokens[i].empty() && tokens[i][0] == '.') {
+                break;
+            }
+
             std::vector<std::string> commaSplit;
             splitString(&commaSplit, tokens[i], ',');
             if (!tokens[i].empty()) {
