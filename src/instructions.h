@@ -57,7 +57,7 @@ public:
         STL,
         STS,
         STSW,
-        SIT,
+        STT,
         STX,
         SUB,
         SUBF,

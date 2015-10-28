@@ -78,7 +78,7 @@ Instructions::Instructions()
         { SicXE::STL,    "STL",    0x14, Length::ThreeOrFour, Type::OneOp },
         { SicXE::STS,    "STS",    0x7C, Length::ThreeOrFour, Type::OneOp },
         { SicXE::STSW,   "STSW",   0xE8, Length::ThreeOrFour, Type::OneOp },
-        { SicXE::SIT,    "SIT",    0x84, Length::ThreeOrFour, Type::OneOp },
+        { SicXE::STT,    "STT",    0x84, Length::ThreeOrFour, Type::OneOp },
         { SicXE::STX,    "STX",    0x10, Length::ThreeOrFour, Type::OneOp },
         { SicXE::SUB,    "SUB",    0x1C, Length::ThreeOrFour, Type::OneOp },
         { SicXE::SUBF,   "SUBF",   0x5C, Length::ThreeOrFour, Type::OneOp },
