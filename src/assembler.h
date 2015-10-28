@@ -34,7 +34,8 @@ private:
     bool writeOutput(const std::string &listingFile,
                      const std::string &objectFile);
 
-    void splitString(std::vector<std::string> *out, const std::string &in, char delim);
+    void splitString(std::vector<std::string> *out, const std::string &in,
+                     const std::string &delims);
 
     bool findLabelAddr(const std::string &label, unsigned int *out);
 

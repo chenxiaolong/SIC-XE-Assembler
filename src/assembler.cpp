@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <cstdio>
+#include <cstring>
 
 #include <stdarg.h>
 
@@ -122,7 +123,7 @@ bool Assembler::pass1(const std::vector<std::string> &lines)
         ++lineNumber;
 
         std::vector<std::string> tokens;
-        splitString(&tokens, line, ' ');
+        splitString(&tokens, line, " \t");
 
         if (tokens.empty()) {
             // Skip empty lines
@@ -171,7 +172,7 @@ bool Assembler::pass1(const std::vector<std::string> &lines)
             }
 
             std::vector<std::string> commaSplit;
-            splitString(&commaSplit, tokens[i], ',');
+            splitString(&commaSplit, tokens[i], ",");
             if (!tokens[i].empty()) {
                 asmLine->params.insert(asmLine->params.end(),
                                        commaSplit.begin(), commaSplit.end());
@@ -524,18 +525,23 @@ bool Assembler::writeOutput(const std::string &listingFile,
 }
 
 /* Split string using delimiter and keep only non-empty tokens */
-void Assembler::splitString(std::vector<std::string> *out, const std::string &in, char delim)
+void Assembler::splitString(std::vector<std::string> *out, const std::string &in,
+                            const std::string &delims)
 {
-    out->clear();
+    char *p;
+    char *save_ptr;
+    std::vector<char> copy(in.begin(), in.end());
+    copy.push_back('\0');
 
-    std::istringstream ss(in);
-    std::string temp;
-    while (std::getline(ss, temp, delim)) {
-        // Skip empty
-        if (!temp.empty()) {
-            out->push_back(temp);
-        }
+    std::vector<std::string> split;
+
+    p = strtok_r(copy.data(), delims.c_str(), &save_ptr);
+    while (p != nullptr) {
+        split.push_back(p);
+        p = strtok_r(nullptr, delims.c_str(), &save_ptr);
     }
+
+	out->swap(split);
 }
 
 /* Search table for the address of a label */
