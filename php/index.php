@@ -117,6 +117,7 @@ if (!auth_is_authenticated()) {
                 word-wrap: normal;
                 white-space: pre;
                 font-family: monospace;
+                display: block;
             }
 
             .avatar-image-nav {
