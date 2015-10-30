@@ -1,5 +1,4 @@
-#ifndef INSTRUCTIONS_H
-#define INSTRUCTIONS_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -139,5 +138,3 @@ public:
 private:
     std::vector<InstrInfo> m_instrs;
 };
-
-#endif // INSTRUCTIONS_H

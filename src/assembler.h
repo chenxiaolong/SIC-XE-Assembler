@@ -1,5 +1,4 @@
-#ifndef ASSEMBLER_H
-#define ASSEMBLER_H
+#pragma once
 
 #include "instructions.h"
 
@@ -75,5 +74,3 @@ private:
     std::string m_name;
     std::string m_error;
 };
-
-#endif // ASSEMBLER_H
