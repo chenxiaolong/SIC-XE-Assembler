@@ -130,7 +130,7 @@ bool Assembler::pass1(const std::vector<std::string> &lines)
             continue;
         }
 
-        if (tokens[0][0] == '.') {
+        if (tokens[0][0] == '.' || tokens[0][0] == ';') {
             // Skip comment lines
             continue;
         }
@@ -167,7 +167,7 @@ bool Assembler::pass1(const std::vector<std::string> &lines)
         // Treat remaining tokens in the line as parameters and split them at each
         // comma if necessary
         for (unsigned int i = paramIndex; i < tokens.size(); ++i) {
-            if (!tokens[i].empty() && tokens[i][0] == '.') {
+            if (!tokens[i].empty() && (tokens[i][0] == '.' || tokens[i][0] == ';')) {
                 break;
             }
 
