@@ -573,15 +573,22 @@ bool Assembler::convertMovToSicXE(const std::vector<std::string> &params,
     bool param1IsReg = Instructions::getRegister(params[0]) >= 0;
     bool param2IsReg = Instructions::getRegister(params[1]) >= 0;
 
+    bool sourceFirst = (param1IsReg && params[0].compare(0, 2, "%E") == 0)
+            || (param2IsReg && params[1].compare(0, 2, "%E") == 0);
+    const std::string *source = sourceFirst ? &params[0] : &params[1];
+    const std::string *target = sourceFirst ? &params[1] : &params[0];
+    bool sourceIsReg = sourceFirst ? param1IsReg : param2IsReg;
+    bool targetIsReg = sourceFirst ? param2IsReg : param1IsReg;
+
     paramsOut->clear();
 
-    if (param1IsReg && param2IsReg) {
+    if (sourceIsReg && targetIsReg) {
         // Use RMO to move R1 to R2
         *instrOut = m_instrs[Instructions::SicXE::RMO]->name;
-        paramsOut->push_back(params[1]);
-        paramsOut->push_back(params[0]);
-    } else if (param1IsReg) {
-        std::string regName = Instructions::getRegisterName(params[0]);
+        paramsOut->push_back(*source);
+        paramsOut->push_back(*target);
+    } else if (targetIsReg) {
+        std::string regName = Instructions::getRegisterName(*target);
         std::string instr = "LD" + regName;
 
         if (!m_instrs.isSicXE(instr)) {
@@ -591,9 +598,9 @@ bool Assembler::convertMovToSicXE(const std::vector<std::string> &params,
         }
 
         *instrOut = instr;
-        paramsOut->push_back(params[1]);
+        paramsOut->push_back(*source);
     } else {
-        std::string regName = Instructions::getRegisterName(params[1]);
+        std::string regName = Instructions::getRegisterName(*source);
         std::string instr = "ST" + regName;
 
         if (!m_instrs.isSicXE(instr)) {
@@ -603,7 +610,7 @@ bool Assembler::convertMovToSicXE(const std::vector<std::string> &params,
         }
 
         *instrOut = instr;
-        paramsOut->push_back(params[0]);
+        paramsOut->push_back(*target);
     }
 
     if (extended) {
