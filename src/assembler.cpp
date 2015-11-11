@@ -599,7 +599,7 @@ bool Assembler::convertMovToSicXE(const std::vector<std::string> &params,
 
         *instrOut = instr;
         paramsOut->push_back(*source);
-    } else {
+    } else if (sourceIsReg) {
         std::string regName = Instructions::getRegisterName(*source);
         std::string instr = "ST" + regName;
 
@@ -611,6 +611,9 @@ bool Assembler::convertMovToSicXE(const std::vector<std::string> &params,
 
         *instrOut = instr;
         paramsOut->push_back(*target);
+    } else {
+        m_error = "Neither parameter is a register";
+        return false;
     }
 
     if (extended) {
