@@ -206,23 +206,23 @@ int Instructions::getRegister(const std::string &reg)
         return -1;
     }
 
-    if (reg == "%RA" || reg == "AX" || reg == "A") {
+    if (reg == "%RA" || reg == "%EAX" || reg == "AX" || reg == "A") {
         return Register_A;
-    } else if (reg == "%RX" || reg == "XX" || reg == "X") {
+    } else if (reg == "%RX" || reg == "%EXX" || reg == "XX" || reg == "X") {
         return Register_X;
-    } else if (reg == "%RL" || reg == "LX" || reg == "L") {
+    } else if (reg == "%RL" || reg == "%ELX" || reg == "LX" || reg == "L") {
         return Register_L;
-    } else if (reg == "%RB" || reg == "BX" || reg == "B") {
+    } else if (reg == "%RB" || reg == "%EBX" || reg == "BX" || reg == "B") {
         return Register_B;
-    } else if (reg == "%RS" || reg == "SX" || reg == "S") {
+    } else if (reg == "%RS" || reg == "%ESX" || reg == "SX" || reg == "S") {
         return Register_S;
-    } else if (reg == "%RT" || reg == "TX" || reg == "T") {
+    } else if (reg == "%RT" || reg == "%ETX" || reg == "TX" || reg == "T") {
         return Register_T;
-    } else if (reg == "%RF" || reg == "FX" || reg == "F") {
+    } else if (reg == "%RF" || reg == "%EFX" || reg == "FX" || reg == "F") {
         return Register_F;
-    } else if (reg == "%RPC" || reg == "PCX" || reg == "PC") {
+    } else if (reg == "%RPC" || reg == "%EPCX" || reg == "PCX" || reg == "PC") {
         return Register_PC;
-    } else if (reg == "%RSW" || reg == "SWX" || reg == "SW") {
+    } else if (reg == "%RSW" || reg == "%ESWX" || reg == "SWX" || reg == "SW") {
         return Register_SW;
     } else {
         return -1;
