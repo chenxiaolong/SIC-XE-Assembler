@@ -47,6 +47,8 @@ private:
                             bool extended,
                             std::string *instrOut,
                             std::vector<std::string> *paramsOut);
+    void convertSwapParams(const std::vector<std::string> &params,
+                           std::vector<std::string> *paramsOut);
     void convertIndexing(std::vector<std::string> *params);
 
     std::string getQuoted(const std::string &str);

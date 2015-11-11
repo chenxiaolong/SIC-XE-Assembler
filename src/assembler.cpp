@@ -381,11 +381,18 @@ bool Assembler::pass2()
                     asmLine->objectCode = getObjCode2Bytes(
                             instr, asmLine->params[0], std::string());
                     break;
-                case Instructions::Type::TwoOp:
+                case Instructions::Type::TwoOp: {
+                    // Swap parameters if the registers are in the form %E{register}X
+                    // and the instruction takes two registers as arguments
+                    std::vector<std::string> newParams;
+                    convertSwapParams(asmLine->params, &newParams);
+                    asmLine->params.swap(newParams);
+
                     // Two byte, two operand instructions
                     asmLine->objectCode = getObjCode2Bytes(
                             instr, asmLine->params[0], asmLine->params[1]);
                     break;
+                }
                 case Instructions::Type::ZeroOp:
                     // Programmer error
                     assert(false);
@@ -694,6 +701,20 @@ bool Assembler::convertLdStToSicXE(const std::string &instr,
     }
 
     return true;
+}
+
+void Assembler::convertSwapParams(const std::vector<std::string> &params,
+                                  std::vector<std::string> *paramsOut)
+{
+    bool param1IsReg = Instructions::getRegister(params[0]) >= 0;
+    bool param2IsReg = Instructions::getRegister(params[1]) >= 0;
+
+    paramsOut->clear();
+
+    bool targetFirst = (param1IsReg && params[0].compare(0, 2, "%E") == 0)
+            || (param2IsReg && params[1].compare(0, 2, "%E") == 0);
+    paramsOut->push_back(targetFirst ? params[1] : params[0]);
+    paramsOut->push_back(targetFirst ? params[0] : params[1]);
 }
 
 /* Convert parameters in the form BUFFER[%RX] to the form BUFFER,X */
