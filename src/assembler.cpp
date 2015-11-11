@@ -309,7 +309,7 @@ bool Assembler::pass1(const std::vector<std::string> &lines)
 
             std::string quoted = getQuoted(asmLine->params[0]);
             if (quoted.empty()) {
-                error(asmLine, "No bytes found in BYTE variable: %s",
+                error(asmLine, "Invalid value for BYTE variable: %s",
                       asmLine->params[0].c_str());
                 return false;
             }
@@ -731,7 +731,7 @@ std::string Assembler::getQuoted(const std::string &str)
         if (!str.empty() && str[0] == 'C') {
             // Character bytes
             return quoted;
-        } else if (!str.empty() && str[0] == 'X') {
+        } else if (!str.empty() && str[0] == 'X' && quoted.size() % 2 == 0) {
             // Hex bytes
             std::string temp;
             for (unsigned int i = 0; (i + 1) < quoted.size(); i += 2) {
